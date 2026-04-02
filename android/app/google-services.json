@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1066532627208",
+    "project_id": "outfithub",
+    "storage_bucket": "outfithub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1066532627208:android:44219637189ac8192c02bd",
+        "android_client_info": {
+          "package_name": "com.example.outfithub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDGpjN__9WoSMeV8dRGFqqEsjJTuX93HI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
