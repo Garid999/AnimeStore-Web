@@ -130,80 +130,94 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  int _gridColumns(double width) {
+    if (width >= 1200) return 5;
+    if (width >= 900) return 4;
+    if (width >= 600) return 3;
+    return 2;
+  }
+
   Widget _buildHome() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Сайн байна уу, ${FirebaseAuth.instance.currentUser?.displayName ?? 'Guest'}!',
-                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const Text('Аниме фэшн дэлгүүрт тавтай морил',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.border),
-                ),
-                child: TextField(
-                  style: const TextStyle(color: AppTheme.textPrimary),
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  decoration: const InputDecoration(
-                    hintText: 'Бараа хайх...',
-                    hintStyle: TextStyle(color: AppTheme.textSecondary),
-                    border: InputBorder.none,
-                    icon: Icon(Icons.search, color: AppTheme.primary),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = _gridColumns(constraints.maxWidth);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Сайн байна уу, ${FirebaseAuth.instance.currentUser?.displayName ?? 'Guest'}!',
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 90,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.only(right: 16),
-                  itemCount: _categories.length,
-                  itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
-                ),
-              ),
-            ],
-          ),
-        ),
-        _filteredProducts.isEmpty
-          ? const Expanded(
-              child: Center(
-                child: Text('Бараа олдсонгүй', style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
-              ),
-            )
-          : Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, childAspectRatio: 0.72,
-                  crossAxisSpacing: 12, mainAxisSpacing: 12,
-                ),
-                itemCount: _filteredProducts.length,
-                itemBuilder: (ctx, i) => ProductCard(
-                  product: _filteredProducts[i],
-                  onAddToCart: () => _addToCart(_filteredProducts[i]),
-                  onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => ProductDetailScreen(
-                      product: _filteredProducts[i],
-                      onAddToCart: () => _addToCart(_filteredProducts[i]),
-                    ))),
-                ),
+                  const Text('Аниме фэшн дэлгүүрт тавтай морил',
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: TextField(
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      decoration: const InputDecoration(
+                        hintText: 'Бараа хайх...',
+                        hintStyle: TextStyle(color: AppTheme.textSecondary),
+                        border: InputBorder.none,
+                        icon: Icon(Icons.search, color: AppTheme.primary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 90,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.only(right: 16),
+                      itemCount: _categories.length,
+                      itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
+                    ),
+                  ),
+                ],
               ),
             ),
-      ],
+            _filteredProducts.isEmpty
+              ? const Expanded(
+                  child: Center(
+                    child: Text('Бараа олдсонгүй', style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
+                  ),
+                )
+              : Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: cols,
+                      childAspectRatio: 0.78,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: _filteredProducts.length,
+                    itemBuilder: (ctx, i) => ProductCard(
+                      product: _filteredProducts[i],
+                      onAddToCart: () => _addToCart(_filteredProducts[i]),
+                      onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => ProductDetailScreen(
+                          product: _filteredProducts[i],
+                          onAddToCart: () => _addToCart(_filteredProducts[i]),
+                        ))),
+                    ),
+                  ),
+                ),
+          ],
+        );
+      },
     );
   }
 
@@ -262,63 +276,68 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategory() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Ангилал',
-                  style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800)),
-              const SizedBox(height: 14),
-              SizedBox(
-                height: 90,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.only(right: 16),
-                  itemCount: _categories.length,
-                  itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = _gridColumns(constraints.maxWidth);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Ангилал',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: 90,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.only(right: 16),
+                      itemCount: _categories.length,
+                      itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Expanded(
-          child: _filteredProducts.isEmpty
-              ? const Center(
-                  child: Text('Энэ ангилалд бараа байхгүй',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 15)))
-              : GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.72,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: _filteredProducts.length,
-                  itemBuilder: (ctx, i) => ProductCard(
-                    product: _filteredProducts[i],
-                    onAddToCart: () => _addToCart(_filteredProducts[i]),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => ProductDetailScreen(
-                                  product: _filteredProducts[i],
-                                  onAddToCart: () =>
-                                      _addToCart(_filteredProducts[i]),
-                                ))),
-                  ),
-                ),
-        ),
-      ],
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _filteredProducts.isEmpty
+                  ? const Center(
+                      child: Text('Энэ ангилалд бараа байхгүй',
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 15)))
+                  : GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: cols,
+                        childAspectRatio: 0.78,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: _filteredProducts.length,
+                      itemBuilder: (ctx, i) => ProductCard(
+                        product: _filteredProducts[i],
+                        onAddToCart: () => _addToCart(_filteredProducts[i]),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => ProductDetailScreen(
+                                      product: _filteredProducts[i],
+                                      onAddToCart: () =>
+                                          _addToCart(_filteredProducts[i]),
+                                    ))),
+                      ),
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 

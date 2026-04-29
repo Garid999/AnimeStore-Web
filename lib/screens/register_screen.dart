@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/app_theme.dart';
 import 'home_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,16 +13,33 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _nameCtrl  = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  final _nameCtrl = TextEditingController();
-  bool _obscure = true;
-  bool _isLoading = false;
+  final _passCtrl  = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passFocus  = FocusNode();
+  bool _obscure    = true;
+  bool _isLoading  = false;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _emailFocus.dispose();
+    _passFocus.dispose();
+    super.dispose();
+  }
 
   Future<void> _register() async {
-    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty || _nameCtrl.text.isEmpty) {
+    if (_nameCtrl.text.trim().isEmpty ||
+        _emailCtrl.text.trim().isEmpty ||
+        _passCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(
+          content: Text('Бүх талбарыг бөглөнө үү'),
+          backgroundColor: AppTheme.primary,
+        ),
       );
       return;
     }
@@ -32,21 +51,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       await cred.user?.updateDisplayName(_nameCtrl.text.trim());
 
-      // Create Firestore user profile — wrapped so it never blocks navigation
       try {
         final uid = cred.user!.uid;
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .set({
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'email': _emailCtrl.text.trim(),
           'displayName': _nameCtrl.text.trim(),
           'userDisplayId': 'U-${uid.substring(0, 6).toUpperCase()}',
           'createdAt': FieldValue.serverTimestamp(),
         });
-      } catch (_) {
-        // Firestore failure must not block registration navigation
-      }
+      } catch (_) {}
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -54,14 +67,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      String message = 'An error occurred';
-      if (e.code == 'weak-password') message = 'Password is too weak';
-      if (e.code == 'email-already-in-use') message = 'Email already in use';
-      if (e.code == 'invalid-email') message = 'Invalid email address';
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      final msg = switch (e.code) {
+        'weak-password'      => 'Нууц үг хэтэрхий богино байна (мин 6 тэмдэгт)',
+        'email-already-in-use' => 'Энэ имэйл хаяг бүртгэлтэй байна',
+        'invalid-email'      => 'Имэйл хаяг буруу байна',
+        _                    => 'Алдаа гарлаа (${e.code})',
+      };
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text(msg), backgroundColor: AppTheme.primary),
       );
-    } finally {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -69,95 +87,237 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Create Account'),
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: AppTheme.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.textPrimary, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Column(
             children: [
-              const Spacer(),
-              const Text('Join OutfitHub',
-                style: TextStyle(color: Colors.white, fontSize: 24,
-                  fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+
+              // Logo
+              Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(color: AppTheme.border, width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x20000000),
+                      blurRadius: 20,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(8),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.white,
+                      child: const Center(
+                        child: Text('AS',
+                            style: TextStyle(
+                                color: AppTheme.primary,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+              const Text('Бүртгэл үүсгэх',
+                  style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3)),
+              const SizedBox(height: 6),
+              const Text('Anime Store-д тавтай морил',
+                  style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                      letterSpacing: 0.2)),
+
+              const SizedBox(height: 40),
+
+              // Full Name
+              _label('Бүтэн нэр'),
               const SizedBox(height: 8),
-              const Text('Create your account',
-                style: TextStyle(color: Colors.grey, fontSize: 14)),
-              const Spacer(),
-              Align(alignment: Alignment.centerLeft,
-                child: Text('Full Name', style: TextStyle(color: Colors.grey[400], fontSize: 13))),
-              const SizedBox(height: 6),
-              TextField(
+              _inputField(
                 controller: _nameCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFE53935)),
-                  hintText: 'Your full name',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  filled: true,
-                  fillColor: const Color(0xFF1E1E1E),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
-                ),
+                hint: 'Таны бүтэн нэр',
+                icon: Icons.person_outline_rounded,
+                action: TextInputAction.next,
+                onSubmitted: (_) => FocusScope.of(context).requestFocus(_emailFocus),
               ),
-              const SizedBox(height: 16),
-              Align(alignment: Alignment.centerLeft,
-                child: Text('Email', style: TextStyle(color: Colors.grey[400], fontSize: 13))),
-              const SizedBox(height: 6),
-              TextField(
+
+              const SizedBox(height: 20),
+
+              // Email
+              _label('Имэйл хаяг'),
+              const SizedBox(height: 8),
+              _inputField(
                 controller: _emailCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.mail_outline, color: Color(0xFFE53935)),
-                  hintText: 'email@example.com',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  filled: true,
-                  fillColor: const Color(0xFF1E1E1E),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
-                ),
+                hint: 'email@example.com',
+                icon: Icons.mail_outline_rounded,
+                inputType: TextInputType.emailAddress,
+                focusNode: _emailFocus,
+                action: TextInputAction.next,
+                onSubmitted: (_) => FocusScope.of(context).requestFocus(_passFocus),
               ),
-              const SizedBox(height: 16),
-              Align(alignment: Alignment.centerLeft,
-                child: Text('Password', style: TextStyle(color: Colors.grey[400], fontSize: 13))),
-              const SizedBox(height: 6),
+
+              const SizedBox(height: 20),
+
+              // Password
+              _label('Нууц үг'),
+              const SizedBox(height: 8),
               TextField(
                 controller: _passCtrl,
+                focusNode: _passFocus,
                 obscureText: _obscure,
-                style: const TextStyle(color: Colors.white),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) { if (!_isLoading) _register(); },
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFE53935)),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded,
+                      color: AppTheme.primary),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.grey),
+                    icon: Icon(
+                        _obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: AppTheme.textSecondary,
+                        size: 20),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
-                  hintText: 'Min 6 characters',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  hintText: 'Мин 6 тэмдэгт',
+                  hintStyle: const TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 14),
                   filled: true,
-                  fillColor: const Color(0xFF1E1E1E),
+                  fillColor: AppTheme.surface,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: AppTheme.primary, width: 1.5),
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 32),
+
+              // Sign Up button
               _isLoading
-                ? const CircularProgressIndicator(color: Color(0xFFE53935))
-                : ElevatedButton(
-                    onPressed: _register,
-                    child: const Text('SIGN UP'),
+                  ? const CircularProgressIndicator(color: AppTheme.primary)
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _register,
+                        child: const Text('БҮРТГҮҮЛЭХ',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2)),
+                      ),
+                    ),
+
+              const SizedBox(height: 24),
+
+              // Already have account
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Аль хэдийн бүртгэлтэй юу? ',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 14)),
+                  GestureDetector(
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    ),
+                    child: const Text('Нэвтрэх',
+                        style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700)),
                   ),
-              const Spacer(),
+                ],
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _label(String text) => Align(
+        alignment: Alignment.centerLeft,
+        child: Text(text,
+            style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
+      );
+
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType inputType = TextInputType.text,
+    TextInputAction action = TextInputAction.next,
+    FocusNode? focusNode,
+    void Function(String)? onSubmitted,
+  }) =>
+      TextField(
+        controller: controller,
+        keyboardType: inputType,
+        textInputAction: action,
+        focusNode: focusNode,
+        onSubmitted: onSubmitted,
+        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: AppTheme.primary),
+          hintText: hint,
+          hintStyle: const TextStyle(
+              color: AppTheme.textSecondary, fontSize: 14),
+          filled: true,
+          fillColor: AppTheme.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+          ),
+        ),
+      );
 }

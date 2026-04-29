@@ -1,1 +1,60 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"outfithub","appId":"1:1066532627208:android:44219637189ac8192c02bd","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"outfithub","configurations":{"android":"1:1066532627208:android:44219637189ac8192c02bd","ios":"1:1066532627208:ios:89b28d30abe352b72c02bd","macos":"1:1066532627208:ios:89b28d30abe352b72c02bd","web":"1:1066532627208:web:31c160e4fe5b27982c02bd","windows":"1:1066532627208:web:c26326ce6b4eed682c02bd"}}}}}}
+{
+  "hosting": {
+    "site": "anime-store",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css|wasm)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "outfithub",
+          "appId": "1:1066532627208:android:44219637189ac8192c02bd",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "outfithub",
+          "configurations": {
+            "android": "1:1066532627208:android:44219637189ac8192c02bd",
+            "ios": "1:1066532627208:ios:89b28d30abe352b72c02bd",
+            "macos": "1:1066532627208:ios:89b28d30abe352b72c02bd",
+            "web": "1:1066532627208:web:31c160e4fe5b27982c02bd",
+            "windows": "1:1066532627208:web:c26326ce6b4eed682c02bd"
+          }
+        }
+      }
+    }
+  }
+}
