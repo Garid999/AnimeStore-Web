@@ -91,6 +91,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.background,
         elevation: 0,
+        centerTitle: true,
+        title: const Text('Anime Store',
+            style: TextStyle(
+                color: AppTheme.primary,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: AppTheme.textPrimary, size: 20),
