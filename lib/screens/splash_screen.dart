@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../utils/app_theme.dart';
 import 'login_screen.dart';
+import 'home_screen.dart';
+import 'admin_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,59 +13,125 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _fadeAnim;
+  late Animation<double> _scaleAnim;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900));
+    _fadeAnim  = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    _scaleAnim = Tween<double>(begin: 0.8, end: 1.0)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
+    _ctrl.forward();
+
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (!mounted) return;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()));
+      } else if (user.email?.toLowerCase() == kAdminEmail.toLowerCase()) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const AdminScreen()));
+      } else {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()));
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppTheme.background,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE53935),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.checkroom,
-                color: Colors.white,
-                size: 56,
-              ),
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: ScaleTransition(
+            scale: _scaleAnim,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(color: AppTheme.border, width: 2),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Color(0x18000000),
+                          blurRadius: 24,
+                          offset: Offset(0, 8))
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppTheme.primary,
+                        child: const Center(
+                          child: Text('AS',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w900)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                const Text('Anime Store',
+                    style: TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1)),
+
+                const SizedBox(height: 8),
+
+                const Text('Монголын аниме фэшн дэлгүүр',
+                    style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                        letterSpacing: 0.5)),
+
+                const SizedBox(height: 48),
+
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primary,
+                    strokeWidth: 2.5,
+                    backgroundColor: AppTheme.primary.withValues(alpha: 0.15),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'OutfitHub',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Men's Fashion Store",
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

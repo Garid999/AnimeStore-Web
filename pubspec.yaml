@@ -1,5 +1,5 @@
-name: outfithub
-description: Men's Fashion Store
+name: animestore
+description: Anime Store
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -17,6 +17,8 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +27,22 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/logo.png
+    - assets/images/product_1.png
+    - assets/images/product_2.png
+    - assets/images/product_3.png
+    - assets/images/product_4.png
+    - assets/images/product_5.png
+    - assets/images/product_6.png
+    - assets/images/product_7.png
+    - assets/images/product_8.png
+    - assets/images/product_9.png
+    - assets/images/product_10.png
+    - assets/images/product_11.png
+    - assets/images/product_12.png
+    - assets/images/product_13.png
+    - assets/images/product_14.png
+    - assets/images/product_15.png
+    - assets/images/product_16.png
+    - assets/images/product_17.png

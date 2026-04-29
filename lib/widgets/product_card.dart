@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import '../utils/app_theme.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -15,80 +16,84 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final priceStr = (product.price * 1000)
+        .toInt()
+        .toString()
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  product.imageUrl,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Container(
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (ctx, error, stack) => Container(
-                    color: const Color(0xFF2A2A2A),
-                    child: const Center(
-                      child: Icon(Icons.checkroom, size: 60, color: Color(0xFFE53935)),
+                  color: Colors.white,
+                  child: Image.asset(
+                    product.imageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.checkroom, size: 60, color: AppTheme.primary),
                     ),
                   ),
-                  loadingBuilder: (ctx, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: const Color(0xFF2A2A2A),
-                      child: const Center(
-                        child: CircularProgressIndicator(color: Color(0xFFE53935)),
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     product.name,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     product.category,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        '$priceStr₮',
                         style: const TextStyle(
-                          color: Color(0xFFE53935),
+                          color: AppTheme.primary,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       GestureDetector(
                         onTap: onAddToCart,
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE53935),
-                            borderRadius: BorderRadius.circular(6),
+                            color: AppTheme.primary,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.add, color: Colors.white, size: 16),
                         ),

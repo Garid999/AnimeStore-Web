@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../utils/app_theme.dart';
+import 'orders_screen.dart';
+import 'edit_profile_screen.dart';
+import 'delivery_address_screen.dart';
+import 'notifications_screen.dart';
+import 'support_chat_screen.dart';
+import 'app_info_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onSignOut;
@@ -9,81 +16,174 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final name = user?.displayName ?? 'Хэрэглэгч';
+    final email = user?.email ?? '';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: const Color(0xFF121212),
-      ),
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(title: const Text('Профайл')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // Header
             Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE53935),
-                shape: BoxShape.circle,
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+              decoration: const BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
               ),
-              child: Center(
-                child: Text(
-                  user?.displayName?.isNotEmpty == true
-                      ? user!.displayName![0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              user?.displayName ?? 'User',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              user?.email ?? '',
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
-            ),
-            const SizedBox(height: 32),
-            _buildMenuItem(Icons.shopping_bag_outlined, 'My Orders', () {}),
-            _buildMenuItem(Icons.favorite_outline, 'Wishlist', () {}),
-            _buildMenuItem(Icons.location_on_outlined, 'Shipping Address', () {}),
-            _buildMenuItem(Icons.payment_outlined, 'Payment Methods', () {}),
-            _buildMenuItem(Icons.notifications_outlined, 'Notifications', () {}),
-            _buildMenuItem(Icons.help_outline, 'Help & Support', () {}),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: onSignOut,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2A2A2A),
-                minimumSize: const Size(double.infinity, 54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  Icon(Icons.logout, color: Color(0xFFE53935)),
-                  SizedBox(width: 8),
-                  Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      color: Color(0xFFE53935),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.primary,
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppTheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6))
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(initial,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.w800)),
                     ),
                   ),
+                  const SizedBox(height: 14),
+                  Text(name,
+                      style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  Text(email,
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 13)),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: AppTheme.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: const Text('Anime Store Member',
+                        style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5)),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Menu items
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionLabel('Захиалга'),
+                  _menuItem(
+                    icon: Icons.shopping_bag_outlined,
+                    title: 'Миний захиалгууд',
+                    subtitle: 'Захиалгын түүх харах',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const OrdersScreen(standalone: true)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  _sectionLabel('Тохиргоо'),
+                  _menuItem(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Профайл засах',
+                    subtitle: 'Нэр, мэдээлэл өөрчлөх',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const EditProfileScreen())),
+                  ),
+                  _menuItem(
+                    icon: Icons.location_on_outlined,
+                    title: 'Хүргэлтийн хаяг',
+                    subtitle: 'Хаяг нэмэх, засах',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const DeliveryAddressScreen())),
+                  ),
+                  _menuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Мэдэгдэл',
+                    subtitle: 'Мэдэгдлийн тохиргоо',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const NotificationsScreen())),
+                  ),
+
+                  const SizedBox(height: 16),
+                  _sectionLabel('Тусламж'),
+                  _menuItem(
+                    icon: Icons.support_agent_outlined,
+                    title: 'Тусламж & Дэмжлэг',
+                    subtitle: 'Асуулт, санал хүсэлт — Admin-тай чат',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const SupportChatScreen())),
+                  ),
+                  _menuItem(
+                    icon: Icons.info_outline_rounded,
+                    title: 'Апп-ын тухай',
+                    subtitle: 'Хувилбар 1.0.0 · Anime Store',
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (_) => const AppInfoScreen())),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Sign out
+                  GestureDetector(
+                    onTap: () => _confirmSignOut(context),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: AppTheme.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout_rounded,
+                              color: AppTheme.primary, size: 20),
+                          SizedBox(width: 10),
+                          Text('Гарах',
+                              style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -93,27 +193,103 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
+  void _confirmSignOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Гарах уу?',
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+        content: const Text('Та акаунтаасаа гарах гэж байна.',
+            style: TextStyle(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Болих',
+                style: TextStyle(color: AppTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8))),
+            onPressed: () {
+              Navigator.pop(context);
+              onSignOut();
+            },
+            child: const Text('Гарах',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String label) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(label,
+            style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5)),
+      );
+
+  Widget _menuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    bool showArrow = true,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFFE53935), size: 22),
-            const SizedBox(width: 16),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppTheme.primary, size: 20),
+            ),
+            const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 11)),
+                ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+            if (showArrow)
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppTheme.textSecondary, size: 14),
           ],
         ),
       ),

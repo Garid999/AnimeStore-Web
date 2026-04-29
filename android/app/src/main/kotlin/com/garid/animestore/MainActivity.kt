@@ -1,4 +1,4 @@
-package com.example.outfithub
+package com.garid.animestore
 
 import io.flutter.embedding.android.FlutterActivity
 

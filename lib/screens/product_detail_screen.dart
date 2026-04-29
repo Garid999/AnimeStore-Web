@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import '../utils/app_theme.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final Product product;
   final VoidCallback onAddToCart;
 
@@ -12,14 +13,26 @@ class ProductDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  String _selectedSize = 'M';
+
+  @override
   Widget build(BuildContext context) {
+    final priceStr = (widget.product.price * 1000)
+        .toInt()
+        .toString()
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: Text(product.name),
-        backgroundColor: const Color(0xFF121212),
+        title: Text(widget.product.name,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -27,167 +40,159 @@ class ProductDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 350,
+            // Product Image
+            Container(
+              height: 380,
               width: double.infinity,
-              child: Image.network(
-                product.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, error, stack) => Container(
-                  color: const Color(0xFF2A2A2A),
-                  child: const Center(
-                    child: Icon(Icons.checkroom, size: 100, color: Color(0xFFE53935)),
-                  ),
+              color: Colors.white,
+              child: Image.asset(
+                widget.product.imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(Icons.checkroom, size: 100, color: AppTheme.primary),
                 ),
-                loadingBuilder: (ctx, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    color: const Color(0xFF2A2A2A),
-                    child: const Center(
-                      child: CircularProgressIndicator(color: Color(0xFFE53935)),
-                    ),
-                  );
-                },
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Color(0xFFE53935),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                  // Category tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
+                      color: AppTheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      product.category,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                      widget.product.category,
+                      style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Name + Price
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${product.rating}',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      Expanded(
+                        child: Text(
+                          widget.product.name,
+                          style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              height: 1.2),
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Text(
-                        '(128 reviews)',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                        '$priceStr₮',
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const SizedBox(height: 10),
+
+                  // Rating
+                  Row(
+                    children: [
+                      ...List.generate(5, (i) => Icon(
+                        i < widget.product.rating.floor() ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: const Color(0xFFFFB300),
+                        size: 18,
+                      )),
+                      const SizedBox(width: 6),
+                      Text('${widget.product.rating}',
+                          style: const TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 13)),
+                    ],
                   ),
+
+                  const SizedBox(height: 20),
+                  const Divider(color: AppTheme.border),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  const Text('Тайлбар',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   Text(
-                    product.description,
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                      height: 1.6,
-                    ),
+                    widget.product.description,
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 14, height: 1.6),
                   ),
+
                   const SizedBox(height: 20),
-                  const Text(
-                    'Select Size',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const Divider(color: AppTheme.border),
+                  const SizedBox(height: 16),
+
+                  // Size selector
+                  const Text('Хэмжээ сонгох',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
                   const SizedBox(height: 12),
                   Row(
                     children: ['S', 'M', 'L', 'XL', 'XXL'].map((size) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: size == 'M'
-                              ? const Color(0xFFE53935)
-                              : const Color(0xFF2A2A2A),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: size == 'M'
-                                ? const Color(0xFFE53935)
-                                : Colors.grey[700]!,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            size,
-                            style: TextStyle(
-                              color: size == 'M' ? Colors.white : Colors.grey,
-                              fontWeight: FontWeight.w600,
+                      final selected = _selectedSize == size;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedSize = size),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          margin: const EdgeInsets.only(right: 10),
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: selected ? AppTheme.primary : AppTheme.surface,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: selected ? AppTheme.primary : AppTheme.border,
+                              width: 1.5,
                             ),
+                          ),
+                          child: Center(
+                            child: Text(size,
+                                style: TextStyle(
+                                    color: selected
+                                        ? Colors.white
+                                        : AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13)),
                           ),
                         ),
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
+
+                  const SizedBox(height: 32),
+
+                  ElevatedButton.icon(
                     onPressed: () {
                       onAddToCart();
                       Navigator.pop(context);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE53935),
-                      minimumSize: const Size(double.infinity, 54),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'Add to Cart',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ],
-                    ),
+                    icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white),
+                    label: const Text('Сагсанд нэмэх',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
                   ),
+
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -196,4 +201,6 @@ class ProductDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  void onAddToCart() => widget.onAddToCart();
 }

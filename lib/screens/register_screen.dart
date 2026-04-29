@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -25,11 +26,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text.trim(),
       );
-      await FirebaseAuth.instance.currentUser?.updateDisplayName(_nameCtrl.text.trim());
+      await cred.user?.updateDisplayName(_nameCtrl.text.trim());
+
+      // Create Firestore user profile — wrapped so it never blocks navigation
+      try {
+        final uid = cred.user!.uid;
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .set({
+          'email': _emailCtrl.text.trim(),
+          'displayName': _nameCtrl.text.trim(),
+          'userDisplayId': 'U-${uid.substring(0, 6).toUpperCase()}',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {
+        // Firestore failure must not block registration navigation
+      }
+
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeScreen()),

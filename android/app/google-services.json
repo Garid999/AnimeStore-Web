@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1066532627208:android:44219637189ac8192c02bd",
+        "mobilesdk_app_id": "1:1066532627208:android:4773cc3a063e38572c02bd",
         "android_client_info": {
-          "package_name": "com.example.outfithub"
+          "package_name": "com.garid.animestore"
         }
       },
       "oauth_client": [],

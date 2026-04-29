@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../utils/app_theme.dart';
 import '../widgets/product_card.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
 import 'cart_screen.dart';
+import 'orders_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,159 +23,79 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'All';
 
-  final List<String> _categories = ['All', 'Shirts', 'Pants', 'Jackets', 'Shoes'];
+  final List<String> _categories = [
+    'All', 'Demon Slayer', 'Bleach', 'Chainsaw Man', 'Attack on Titan',
+    'Hunter x Hunter', 'Jujutsu Kaisen', 'Solo Leveling',
+    'Kaiju 8', 'Dr. Stone', 'Mashle', 'Hoodie',
+  ];
+
+  static const Map<String, Color> _categoryColors = {
+    'All':            Color(0xFF990011),
+    'Demon Slayer':   Color(0xFFB22222),
+    'Bleach':         Color(0xFF1A1A2E),
+    'Chainsaw Man':   Color(0xFFCC2200),
+    'Attack on Titan':Color(0xFF4A5240),
+    'Hunter x Hunter':Color(0xFF1565C0),
+    'Jujutsu Kaisen': Color(0xFF4A148C),
+    'Solo Leveling':  Color(0xFF0D47A1),
+    'Kaiju 8':        Color(0xFF006064),
+    'Dr. Stone':      Color(0xFF2E7D32),
+    'Mashle':         Color(0xFF37474F),
+    'Hoodie':         Color(0xFF5D4037),
+  };
 
   final List<Product> _allProducts = [
-  Product(id:'1', name:'Classic White Shirt', category:'Shirts', price:29.99,
-    imageUrl:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400',
-    rating:4.5, description:'A timeless classic white shirt perfect for any occasion.'),
-  Product(id:'2', name:'Slim Fit Chinos', category:'Pants', price:39.99,
-    imageUrl:'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400',
-    rating:4.3, description:'Modern slim fit chino pants for a sharp look.'),
-  Product(id:'3', name:'Leather Jacket', category:'Jackets', price:89.99,
-    imageUrl:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400',
-    rating:4.8, description:'Premium genuine leather jacket for a bold style.'),
-  Product(id:'4', name:'Casual Sneakers', category:'Shoes', price:49.99,
-    imageUrl:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
-    rating:4.6, description:'Comfortable and stylish casual sneakers for everyday wear.'),
-  Product(id:'5', name:'Denim Jeans', category:'Pants', price:44.99,
-    imageUrl:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
-    rating:4.4, description:'Classic denim jeans with a perfect fit.'),
-  Product(id:'6', name:'Polo Shirt', category:'Shirts', price:24.99,
-    imageUrl:'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400',
-    rating:4.2, description:'Comfortable polo shirt for a smart casual look.'),
-  Product(id:'7', name:'Formal Blazer', category:'Jackets', price:79.99,
-    imageUrl:'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400',
-    rating:4.7, description:'Elegant formal blazer for business and special occasions.'),
-  Product(id:'8', name:'Running Shoes', category:'Shoes', price:59.99,
-    imageUrl:'https://images.unsplash.com/photo-1608231387042-66d1773d3028?w=400',
-    rating:4.5, description:'High performance running shoes for active lifestyle.'),
-  Product(id:'9', name:'Oxford Shirt', category:'Shirts', price:34.99,
-    imageUrl:'https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?w=400',
-    rating:4.3, description:'Classic oxford shirt for a polished look.'),
-  Product(id:'10', name:'Cargo Pants', category:'Pants', price:49.99,
-    imageUrl:'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400',
-    rating:4.1, description:'Functional cargo pants with multiple pockets.'),
-  Product(id:'11', name:'Bomber Jacket', category:'Jackets', price:99.99,
-    imageUrl:'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400',
-    rating:4.6, description:'Stylish bomber jacket for a cool casual look.'),
-  Product(id:'12', name:'Loafers', category:'Shoes', price:69.99,
-    imageUrl:'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400',
-    rating:4.4, description:'Elegant loafers for a smart casual style.'),
-  Product(id:'13', name:'Striped T-Shirt', category:'Shirts', price:19.99,
-    imageUrl:'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400',
-    rating:4.0, description:'Classic striped t-shirt for casual wear.'),
-  Product(id:'14', name:'Track Pants', category:'Pants', price:34.99,
-    imageUrl:'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400',
-    rating:4.2, description:'Comfortable track pants for sports and leisure.'),
-  Product(id:'15', name:'Windbreaker', category:'Jackets', price:74.99,
-    imageUrl:'https://images.unsplash.com/photo-1544923246-77307dd654cb?w=400',
-    rating:4.3, description:'Lightweight windbreaker for outdoor activities.'),
-  Product(id:'16', name:'Chelsea Boots', category:'Shoes', price:89.99,
-    imageUrl:'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=400',
-    rating:4.7, description:'Classic chelsea boots for a stylish look.'),
-  Product(id:'17', name:'Linen Shirt', category:'Shirts', price:27.99,
-    imageUrl:'https://images.unsplash.com/photo-1604695573706-53170668f6a6?w=400',
-    rating:4.1, description:'Breathable linen shirt perfect for summer.'),
-  Product(id:'18', name:'Jogger Pants', category:'Pants', price:37.99,
-    imageUrl:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-    rating:4.3, description:'Comfortable jogger pants for everyday wear.'),
-  Product(id:'19', name:'Denim Jacket', category:'Jackets', price:69.99,
-    imageUrl:'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=400',
-    rating:4.5, description:'Classic denim jacket for a casual cool look.'),
-  Product(id:'20', name:'Dress Shoes', category:'Shoes', price:79.99,
-    imageUrl:'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400',
-    rating:4.6, description:'Elegant dress shoes for formal occasions.'),
-  Product(id:'21', name:'Graphic T-Shirt', category:'Shirts', price:22.99,
-    imageUrl:'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400',
-    rating:4.0, description:'Cool graphic t-shirt for casual style.'),
-  Product(id:'22', name:'Chino Shorts', category:'Pants', price:29.99,
-    imageUrl:'https://images.unsplash.com/photo-1591195853828-11db59a44f43?w=400',
-    rating:4.2, description:'Smart chino shorts for warm weather.'),
-  Product(id:'23', name:'Parka Jacket', category:'Jackets', price:119.99,
-    imageUrl:'https://images.unsplash.com/photo-1548883354-7622d03aca27?w=400',
-    rating:4.8, description:'Warm parka jacket for cold weather.'),
-  Product(id:'24', name:'High Top Sneakers', category:'Shoes', price:74.99,
-    imageUrl:'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=400',
-    rating:4.4, description:'Trendy high top sneakers for a bold look.'),
-  Product(id:'25', name:'Henley Shirt', category:'Shirts', price:26.99,
-    imageUrl:'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400',
-    rating:4.3, description:'Casual henley shirt for a relaxed style.'),
-  Product(id:'26', name:'Slim Jeans', category:'Pants', price:47.99,
-    imageUrl:'https://images.unsplash.com/photo-1604176354204-9268737828e4?w=400',
-    rating:4.5, description:'Slim fit jeans for a modern silhouette.'),
-  Product(id:'27', name:'Trench Coat', category:'Jackets', price:139.99,
-    imageUrl:'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=400',
-    rating:4.9, description:'Classic trench coat for a sophisticated look.'),
-  Product(id:'28', name:'Slip On Shoes', category:'Shoes', price:44.99,
-    imageUrl:'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400',
-    rating:4.1, description:'Easy slip on shoes for everyday comfort.'),
-  Product(id:'29', name:'V-Neck T-Shirt', category:'Shirts', price:18.99,
-    imageUrl:'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400',
-    rating:4.0, description:'Simple v-neck t-shirt for casual wear.'),
-  Product(id:'30', name:'Wide Leg Pants', category:'Pants', price:54.99,
-    imageUrl:'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400',
-    rating:4.2, description:'Trendy wide leg pants for a fashion forward look.'),
-  Product(id:'31', name:'Varsity Jacket', category:'Jackets', price:94.99,
-    imageUrl:'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400',
-    rating:4.6, description:'Classic varsity jacket for a sporty style.'),
-  Product(id:'32', name:'Boat Shoes', category:'Shoes', price:64.99,
-    imageUrl:'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=400',
-    rating:4.3, description:'Classic boat shoes for a nautical look.'),
-  Product(id:'33', name:'Flannel Shirt', category:'Shirts', price:32.99,
-    imageUrl:'https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=400',
-    rating:4.4, description:'Warm flannel shirt for a rugged casual style.'),
-  Product(id:'34', name:'Sweatpants', category:'Pants', price:39.99,
-    imageUrl:'https://images.unsplash.com/photo-1607703703520-bb638e84caf2?w=400',
-    rating:4.1, description:'Cozy sweatpants for relaxed days at home.'),
-  Product(id:'35', name:'Quilted Jacket', category:'Jackets', price:109.99,
-    imageUrl:'https://images.unsplash.com/photo-1548126032-079a0fb0099d?w=400',
-    rating:4.5, description:'Warm quilted jacket for cold weather comfort.'),
-  Product(id:'36', name:'Oxford Shoes', category:'Shoes', price:84.99,
-    imageUrl:'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400',
-    rating:4.7, description:'Classic oxford shoes for formal occasions.'),
-  Product(id:'37', name:'Long Sleeve Shirt', category:'Shirts', price:28.99,
-    imageUrl:'https://images.unsplash.com/photo-1588359348347-9bc6cbbb689e?w=400',
-    rating:4.2, description:'Versatile long sleeve shirt for any season.'),
-  Product(id:'38', name:'Pleated Trousers', category:'Pants', price:59.99,
-    imageUrl:'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400',
-    rating:4.4, description:'Elegant pleated trousers for a formal look.'),
-  Product(id:'39', name:'Sherpa Jacket', category:'Jackets', price:84.99,
-    imageUrl:'https://images.unsplash.com/photo-1605908502724-9093a79a6889?w=400',
-    rating:4.6, description:'Cozy sherpa jacket for ultimate warmth.'),
-  Product(id:'40', name:'Monk Strap Shoes', category:'Shoes', price:94.99,
-    imageUrl:'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=400',
-    rating:4.5, description:'Stylish monk strap shoes for a distinctive look.'),
-  Product(id:'41', name:'Button Down Shirt', category:'Shirts', price:31.99,
-    imageUrl:'https://images.unsplash.com/photo-1598032895397-b9472444bf93?w=400',
-    rating:4.3, description:'Classic button down shirt for smart casual wear.'),
-  Product(id:'42', name:'Corduroy Pants', category:'Pants', price:52.99,
-    imageUrl:'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400',
-    rating:4.2, description:'Textured corduroy pants for a vintage style.'),
-  Product(id:'43', name:'Field Jacket', category:'Jackets', price:114.99,
-    imageUrl:'https://images.unsplash.com/photo-1544923246-77307dd654cb?w=400',
-    rating:4.7, description:'Rugged field jacket for outdoor adventures.'),
-  Product(id:'44', name:'Derby Shoes', category:'Shoes', price:77.99,
-    imageUrl:'https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400',
-    rating:4.4, description:'Classic derby shoes for a smart look.'),
-  Product(id:'45', name:'Muscle Fit Shirt', category:'Shirts', price:23.99,
-    imageUrl:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400',
-    rating:4.1, description:'Muscle fit shirt to show off your physique.'),
-  Product(id:'46', name:'Straight Jeans', category:'Pants', price:46.99,
-    imageUrl:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
-    rating:4.3, description:'Classic straight fit jeans for everyday wear.'),
-  Product(id:'47', name:'Coach Jacket', category:'Jackets', price:72.99,
-    imageUrl:'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400',
-    rating:4.4, description:'Lightweight coach jacket for a sporty style.'),
-  Product(id:'48', name:'Ankle Boots', category:'Shoes', price:87.99,
-    imageUrl:'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=400',
-    rating:4.6, description:'Stylish ankle boots for a sharp look.'),
-  Product(id:'49', name:'Oversized Shirt', category:'Shirts', price:25.99,
-    imageUrl:'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400',
-    rating:4.2, description:'Trendy oversized shirt for a relaxed fit.'),
-  Product(id:'50', name:'Tapered Pants', category:'Pants', price:48.99,
-    imageUrl:'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=400',
-    rating:4.5, description:'Modern tapered pants for a clean silhouette.'),
+  Product(id:'1', name:'Upper Moon One - Kokushibo', category:'Demon Slayer', price:39.0,
+    imageUrl:'assets/images/product_1.png',
+    rating:5.0, description:'Kokushibo - Upper Moon One t-shirt. Black acid wash oversized. Front: crescent moon. Back: 6-eyed butterfly with katana.'),
+  Product(id:'2', name:'KON - Bleach', category:'Bleach', price:39.0,
+    imageUrl:'assets/images/product_2.png',
+    rating:5.0, description:'Kon (Modified Soul) t-shirt from Bleach. Black acid wash oversized.'),
+  Product(id:'3', name:'Denji - Chainsaw Man', category:'Chainsaw Man', price:39.0,
+    imageUrl:'assets/images/product_3.png',
+    rating:5.0, description:'Denji / Chainsaw Man t-shirt. Black acid wash oversized. "DENJI / chainsaw man /" print.'),
+  Product(id:'4', name:'Phantom Troupe - HxH', category:'Hunter x Hunter', price:39.0,
+    imageUrl:'assets/images/product_4.png',
+    rating:5.0, description:'Chrollo Lucilfer - Phantom Troupe from Hunter x Hunter. White acid wash oversized. Front & back design.'),
+  Product(id:'5', name:'Upper Moon Two - Doma', category:'Demon Slayer', price:39.0,
+    imageUrl:'assets/images/product_5.png',
+    rating:5.0, description:'Doma - Upper Moon Two t-shirt from Demon Slayer. Black acid wash oversized. Crescent moon with sword design.'),
+  Product(id:'6', name:'Muichiro Tokito', category:'Demon Slayer', price:39.0,
+    imageUrl:'assets/images/product_6.png',
+    rating:5.0, description:'Muichiro Tokito t-shirt from Demon Slayer. Black acid wash oversized. Front: butterfly cross. Back: Muichiro with katana.'),
+  Product(id:'7', name:'Flame Hashira Rengoku', category:'Demon Slayer', price:39.0,
+    imageUrl:'assets/images/product_7.png',
+    rating:5.0, description:'Rengoku Kyojuro t-shirt from Kimetsu no Yaiba. Beige acid wash oversized. Front: small bird. Back: Rengoku with red sun.'),
+  Product(id:'8', name:'Solo Leveling - ARISE', category:'Solo Leveling', price:39.0,
+    imageUrl:'assets/images/product_8.png',
+    rating:5.0, description:'Solo Leveling ARISE t-shirt. Gray acid wash oversized. Front: sword. Back: Beast Monarch "ARISE" print.'),
+  Product(id:'9', name:'Toji Fushiguro', category:'Jujutsu Kaisen', price:39.0,
+    imageUrl:'assets/images/product_9.png',
+    rating:5.0, description:'Toji Fushiguro t-shirt from Jujutsu Kaisen. Black oversized. Character with chains and scythe design.'),
+  Product(id:'10', name:'Gojo & Geto', category:'Jujutsu Kaisen', price:39.0,
+    imageUrl:'assets/images/product_10.png',
+    rating:5.0, description:'Satoru Gojo & Suguru Geto t-shirt from Jujutsu Kaisen. Black acid wash oversized. Koi fish motif with "SATORU SUGURU" text.'),
+  Product(id:'11', name:'Attack on Titan - Titans', category:'Attack on Titan', price:39.0,
+    imageUrl:'assets/images/product_11.png',
+    rating:5.0, description:'Attack on Titan multi-titan collage t-shirt. Black acid wash oversized. Front: Scout Regiment emblem. Back: titans art.'),
+  Product(id:'12', name:'Eren Yeager - Attack Titan', category:'Attack on Titan', price:39.0,
+    imageUrl:'assets/images/product_12.png',
+    rating:5.0, description:'Eren Yeager Attack Titan t-shirt. Black acid wash oversized. Front: Scout emblem. Back: Eren titan emerging.'),
+  Product(id:'13', name:'Vasto Lorde - Bleach', category:'Bleach', price:39.0,
+    imageUrl:'assets/images/product_13.png',
+    rating:5.0, description:'Vasto Lorde Hollow (最上大虚) t-shirt from Bleach. Beige oversized. Large demon with horns front print.'),
+  Product(id:'14', name:'Solo Leveling - Igris Dragon', category:'Solo Leveling', price:39.0,
+    imageUrl:'assets/images/product_14.png',
+    rating:5.0, description:'Solo Leveling character with purple flame dragon t-shirt. Black acid wash oversized. Front & back design.'),
+  Product(id:'15', name:'Jujutsu Kaisen Characters', category:'Jujutsu Kaisen', price:39.0,
+    imageUrl:'assets/images/product_15.png',
+    rating:5.0, description:'Jujutsu Kaisen multi-character t-shirt. White oversized. Pink/magenta design with multiple JJK characters.'),
+  Product(id:'16', name:'Dr. Stone - Senku', category:'Dr. Stone', price:39.0,
+    imageUrl:'assets/images/product_16.png',
+    rating:5.0, description:'Senku Ishigami t-shirt from Dr. Stone. Olive green acid wash oversized. Senku breaking from stone print.'),
+  Product(id:'17', name:'Sukuna Demon', category:'Jujutsu Kaisen', price:39.0,
+    imageUrl:'assets/images/product_17.png',
+    rating:5.0, description:'Ryomen Sukuna t-shirt from Jujutsu Kaisen. Black acid wash oversized. Red demon face with dripping moon design.'),
 ];
 
   List<Product> get _filteredProducts {
@@ -187,8 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _cartItems.add(product));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${product.name} added to cart'),
-        backgroundColor: const Color(0xFFE53935),
+        content: Text('${product.name} сагсанд нэмлээ'),
+        backgroundColor: AppTheme.primary,
         duration: const Duration(seconds: 1),
       ),
     );
@@ -200,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _signOut() async {
     await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -216,27 +140,39 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? 'Guest'}!',
-                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                'Сайн байна уу, ${FirebaseAuth.instance.currentUser?.displayName ?? 'Guest'}!',
+                style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              const Text('Find your perfect outfit',
-                style: TextStyle(color: Colors.grey, fontSize: 14)),
+              const Text('Аниме фэшн дэлгүүрт тавтай морил',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.border),
                 ),
                 child: TextField(
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: AppTheme.textPrimary),
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: const InputDecoration(
-                    hintText: 'Search outfits...',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintText: 'Бараа хайх...',
+                    hintStyle: TextStyle(color: AppTheme.textSecondary),
                     border: InputBorder.none,
-                    icon: Icon(Icons.search, color: Colors.grey),
+                    icon: Icon(Icons.search, color: AppTheme.primary),
                   ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 90,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.only(right: 16),
+                  itemCount: _categories.length,
+                  itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
                 ),
               ),
             ],
@@ -245,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _filteredProducts.isEmpty
           ? const Expanded(
               child: Center(
-                child: Text('No products found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                child: Text('Бараа олдсонгүй', style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
               ),
             )
           : Expanded(
@@ -271,66 +207,116 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCategoryCircle(String cat) {
+    final isSelected = _selectedCategory == cat;
+    final color = _categoryColors[cat] ?? AppTheme.primary;
+    final label = cat == 'All' ? 'Бүгд' : cat;
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedCategory = cat),
+      child: Container(
+        width: 72,
+        margin: const EdgeInsets.only(right: 14),
+        child: Column(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+                border: isSelected
+                    ? Border.all(color: AppTheme.primary, width: 3)
+                    : Border.all(color: Colors.transparent, width: 3),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))]
+                    : [const BoxShadow(color: Color(0x1A000000), blurRadius: 6, offset: Offset(0, 2))],
+              ),
+              child: Center(
+                child: Text(
+                  cat == 'All' ? '✦' : cat.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCategory() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Categories',
-                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
+              const Text('Ангилал',
+                  style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800)),
+              const SizedBox(height: 14),
               SizedBox(
-                height: 40,
+                height: 90,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  padding: const EdgeInsets.only(right: 16),
                   itemCount: _categories.length,
-                  itemBuilder: (ctx, i) {
-                    final cat = _categories[i];
-                    final isSelected = _selectedCategory == cat;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = cat),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFE53935) : const Color(0xFF1E1E1E),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(cat,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          )),
-                      ),
-                    );
-                  },
+                  itemBuilder: (_, i) => _buildCategoryCircle(_categories[i]),
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 8),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, childAspectRatio: 0.72,
-              crossAxisSpacing: 12, mainAxisSpacing: 12,
-            ),
-            itemCount: _filteredProducts.length,
-            itemBuilder: (ctx, i) => ProductCard(
-              product: _filteredProducts[i],
-              onAddToCart: () => _addToCart(_filteredProducts[i]),
-              onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => ProductDetailScreen(
-                  product: _filteredProducts[i],
-                  onAddToCart: () => _addToCart(_filteredProducts[i]),
-                ))),
-            ),
-          ),
+          child: _filteredProducts.isEmpty
+              ? const Center(
+                  child: Text('Энэ ангилалд бараа байхгүй',
+                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 15)))
+              : GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.72,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: _filteredProducts.length,
+                  itemBuilder: (ctx, i) => ProductCard(
+                    product: _filteredProducts[i],
+                    onAddToCart: () => _addToCart(_filteredProducts[i]),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => ProductDetailScreen(
+                                  product: _filteredProducts[i],
+                                  onAddToCart: () =>
+                                      _addToCart(_filteredProducts[i]),
+                                ))),
+                  ),
+                ),
         ),
       ],
     );
@@ -338,26 +324,73 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    void clearCart() => setState(() => _cartItems.clear());
+
     final List<Widget> screens = [
       _buildHome(),
       _buildCategory(),
-      CartScreen(cartItems: _cartItems, onRemove: _removeFromCart),
+      CartScreen(
+        cartItems: _cartItems,
+        onRemove: _removeFromCart,
+        onPaymentSuccess: clearCart,
+      ),
+      const OrdersScreen(),
       ProfileScreen(onSignOut: _signOut),
     ];
 
+    final themeNotifier = context.watch<ThemeNotifier>();
+    final isDark = themeNotifier.isDark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('OutfitHub'),
-        backgroundColor: const Color(0xFF121212),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: IconButton(
+            tooltip: isDark ? 'Light mode' : 'Dark mode',
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                key: ValueKey(isDark),
+                color: isDark ? Colors.amber : AppTheme.textPrimary,
+                size: 22,
+              ),
+            ),
+            onPressed: () => context.read<ThemeNotifier>().toggle(),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 32, height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
+              child: ClipOval(
+                child: Image.asset('assets/images/logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox()),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text('Anime Store'),
+          ],
+        ),
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                icon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary),
                 onPressed: () => Navigator.push(context,
                   MaterialPageRoute(builder: (_) =>
-                    CartScreen(cartItems: _cartItems, onRemove: _removeFromCart))),
+                    CartScreen(
+                      cartItems: _cartItems,
+                      onRemove: _removeFromCart,
+                      onPaymentSuccess: clearCart,
+                    ))),
               ),
               if (_cartItems.isNotEmpty)
                 Positioned(
@@ -365,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     width: 16, height: 16,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFE53935), shape: BoxShape.circle),
+                      color: AppTheme.primary, shape: BoxShape.circle),
                     child: Center(
                       child: Text('${_cartItems.length}',
                         style: const TextStyle(color: Colors.white, fontSize: 10)),
@@ -380,14 +413,15 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (i) => setState(() => _selectedIndex = i),
-        backgroundColor: const Color(0xFF1E1E1E),
-        selectedItemColor: const Color(0xFFE53935),
-        unselectedItemColor: Colors.grey,
+        backgroundColor: AppTheme.surface,
+        selectedItemColor: AppTheme.primary,
+        unselectedItemColor: AppTheme.textSecondary,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.category_outlined), label: 'Category'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Захиалга'),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
       ),
